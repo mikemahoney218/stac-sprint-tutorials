@@ -94,7 +94,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<p>This tutorial walks through querying a STAC API using the <a href="https://brazil-data-cube.github.io/rstac/">rstac</a> R package, and downloading data from the API using rstac or <a href="https://gdal.org/">GDAL</a> (via <a href="https://github.com/r-spatial/sf">sf</a>. This tutorial will assume that you’re already familiar with <a href="https://cran.r-project.org/">the R language</a> and the <a href="https://github.com/rspatial/terra">terra</a> package.</p>
+<p>This tutorial walks through querying a STAC API using the <a href="https://brazil-data-cube.github.io/rstac/">rstac</a> R package, and downloading data from the API using rstac or <a href="https://gdal.org/">GDAL</a> (via <a href="https://github.com/r-spatial/sf">sf</a>). This tutorial will assume that you’re already familiar with <a href="https://cran.r-project.org/">the R language</a> and the <a href="https://github.com/rspatial/terra">terra</a> package.</p>
 <p>As all of the packages we’ll be using are available from CRAN, you can install them (if necessary) using <code>install.packages()</code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"sf"</span>)</span>
@@ -141,7 +141,7 @@ Searchable spatiotemporal metadata describing Earth science datasets hosted by t
 - field(s): type, id, title, description, stac_version, conformsTo, links</code></pre>
 </div>
 </div>
-<p>Because the <code>RSTACQuery</code> object is a representation of a future query, we can use other functions in rstac to change our query parameters and fields before we run a query. For instance, we can use <code>rstac::collections()</code> to update our request to query the <code>/collections</code> endpoint of the Planetary Computer API, which lists all the various <a href="https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md">collections</a> (which “describe a group of <a href="https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md">Items</a> that share properties and metadata”, to quote the STAC Collection specification):</p>
+<p>Because the <code>RSTACQuery</code> object is a representation of a future query, we can use other functions in rstac to change our query parameters and fields before we actually make a request. For instance, we can use <code>rstac::collections()</code> to update our request to query the <code>/collections</code> endpoint of the Planetary Computer API, which lists all the available <a href="https://github.com/radiantearth/stac-spec/blob/master/collection-spec/collection-spec.md">collections</a> (which, to quote the STAC Collection specification, “describe a group of <a href="https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md">Items</a> that share properties and metadata”):</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>collections_query <span class="ot">&lt;-</span> stac_source <span class="sc">|&gt;</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">collections</span>()</span>
@@ -165,9 +165,10 @@ Searchable spatiotemporal metadata describing Earth science datasets hosted by t
 <pre><code>[1] "collections" "RSTACQuery" </code></pre>
 </div>
 </div>
-<p>Just as before, we need to use <code>get_request()</code> to turn this query <em>specification</em> into a query <em>result</em>:</p>
+<p>And as a result, when we use <code>get_request()</code> to turn this query <em>specification</em> into a query <em>result</em>, we get a list of the collections available from this API:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>rstac<span class="sc">::</span><span class="fu">get_request</span>(collections_query)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>available_collections <span class="ot">&lt;-</span> rstac<span class="sc">::</span><span class="fu">get_request</span>(collections_query)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>available_collections</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>###STACCollectionList
 - collections (122 item(s)):
@@ -185,7 +186,7 @@ Searchable spatiotemporal metadata describing Earth science datasets hosted by t
 - field(s): collections, links</code></pre>
 </div>
 </div>
-<p>Our result shows us a long list of collections that are available from this API! These collections are a subset of the data sets available in the <a href="https://planetarycomputer.microsoft.com/catalog">Planetary Computer data catalog</a>; the Planetary Computer is organized so that each collection corresponds to a distinct data set in the catalog.</p>
+<p>These collections are a subset of the data sets available in the <a href="https://planetarycomputer.microsoft.com/catalog">Planetary Computer data catalog</a>; the Planetary Computer is organized so that each collection corresponds to a distinct data set in the catalog.</p>
 <p>For our purposes today, we’re going to be querying the <a href="https://planetarycomputer.microsoft.com/dataset/usgs-lcmap-conus-v13">USGS Land Change Monitoring, Assessment, and Projection (LCMAP)</a> collection, which provides (among other things) annual land cover classifications for the continental United States. We can query what items are available for this collection using the <code>rstac::stac_search()</code> function. We’ll limit our search to 2021 using the <code>datetime</code> argument, and only search within the LCMAP collection by using the collection’s ID of <code>usgs-lcmap-conus-v13</code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>rstac<span class="sc">::</span><span class="fu">stac_search</span>(</span>
@@ -214,14 +215,14 @@ browse, dates, lcachg, lcachg_metadata, lcpconf, lcpconf_metadata, lcpri, lcpri_
 assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac_version, type</code></pre>
 </div>
 </div>
-<p>We can see that there are 250 items inside this catalog for 2021. Collectively, these items contain all LCMAP data for the continental United States for 2021, with each item containing a number of assets (“object[s] that [contain] a URI to data associated with the Item that can be downloaded or streamed”, to quote <a href="https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md#asset-object">the spec</a>; here, assets are things like “primary land cover classification” or “a metadata object”) covering a relatively small chunk of the nation.</p>
+<p>We can see that there are 250 items inside this catalog for 2021. Collectively, these items contain all LCMAP data for the continental United States for 2021, with each item containing a number of assets covering a relatively small chunk of the nation. These assets are “object[s] that [contain] a URI to data associated with the Item that can be downloaded or streamed”, to quote <a href="https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md#asset-object">the spec</a>; here, assets are things like “primary land cover classification” or “a metadata object”.</p>
 <p>To keep things simple, we’ll start off downloading data for a relatively small region, namely North Carolina’s Ashe County. We’ll use data included in the sf package to get the county’s geometry:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>ashe <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">read_sf</span>(<span class="fu">system.file</span>(<span class="st">"shape/nc.shp"</span>, <span class="at">package =</span> <span class="st">"sf"</span>))[<span class="dv">1</span>, ]</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">st_geometry</span>(ashe) <span class="sc">|&gt;</span> <span class="fu">plot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+<p><img src="rstac_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>To filter our query down to just tiles intersecting this region, we’ll need to provide the bounding box of the county in <a href="https://en.wikipedia.org/wiki/World_Geodetic_System">WGS84</a> as a query parameter. We can use <code>sf::st_transform()</code> to reproject the county and <code>sf::st_bbox()</code> to find our bounding box:</p>
@@ -258,7 +259,8 @@ browse, dates, lcachg, lcachg_metadata, lcpconf, lcpconf_metadata, lcpri, lcpri_
 assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac_version, type</code></pre>
 </div>
 </div>
-<p>As luck would have it, Ashe County is entirely contained in a single LCMAP tile. Before we can download this tile, we’re going to need to <a href="https://planetarycomputer.microsoft.com/docs/concepts/sas/">authenticate ourselves with Planetary Computer</a>. Note that this doesn’t require an account or registration, but rather is a way for Microsoft to uniquely identify your Planetary Computer session and impose rate limits if needed.</p>
+<p>As luck would have it, Ashe County is entirely contained in a single LCMAP tile.</p>
+<p>There are a few different ways to download the assets associated with this item. First, we could use the <code>rstac::assets_download()</code> function. Before we can download assets, however, we’re going to need to <a href="https://planetarycomputer.microsoft.com/docs/concepts/sas/">authenticate ourselves with Planetary Computer</a>. Note that this doesn’t require an account or registration, but rather is a way for Microsoft to uniquely identify your Planetary Computer session and impose rate limits if needed.</p>
 <p>This authentication process is built-in to rstac, using the <code>items_sign()</code> and <code>sign_planetary_computer()</code> functions:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>signed_stac_query <span class="ot">&lt;-</span> rstac<span class="sc">::</span><span class="fu">items_sign</span>(</span>
@@ -278,63 +280,76 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 </div>
 </div>
 <p>We didn’t need to log in or register anywhere, but now have authenticated our requests and will be able to download assets from this STAC API.</p>
-<p>There are a few different ways to download these assets! First, we could use the <code>rstac::assets_download()</code> function. We’ll provide the name of what assets we want to download – here, we’ll download <code>lcpri</code>, which contains the primary land cover classifications for this area:</p>
+<p>We’ll then use this signed query object with <code>assets_download()</code> to actually retrieve our assets. We’ll provide the name of what assets we want to download – let’s start off by downloading <code>lcpri</code>, which contains the primary land cover classifications for this area:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>rstac<span class="sc">::</span><span class="fu">assets_download</span>(signed_stac_query, <span class="st">"lcpri"</span>, <span class="at">output_dir =</span> <span class="fu">tempdir</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>###STACItemCollection
-- features (1 item(s)):
-  - LCMAP_CU_025011_2021_V13_CCDC
-- assets: lcpri
-- item's fields: 
-assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac_version, type</code></pre>
 </div>
-</div>
+<p>We’re downloading these into a temporary directory (using <code>tempdir()</code>) so that these example files will be cleaned up after we finish running this tutorial. In practice, you’ll likely want to set <code>output_dir</code> somewhere else, where the data will persist for as long as you need.</p>
 <p>The <code>assets_download()</code> function will save your data in a sub-directory of <code>output_dir</code> that corresponds to the URL that the asset is being downloaded from. In this case, that winds up being quite a long folder path – but once we type the folder path out, we can load our downloaded raster into R and use it with terra and other raster packages as normal:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>output_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(</span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tempdir</span>(),</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"lcmap"</span>,</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"CU"</span>,</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"V13"</span>,</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"025011"</span>,</span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2021"</span>,</span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"LCMAP_CU_025011_2021_20220721_V13_CCDC"</span>,</span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"LCMAP_CU_025011_2021_20220629_V13_LCPRI.tif"</span></span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">rast</span>()</span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">plot</span>(output_file)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>output_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tempdir</span>(),</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"lcmap"</span>,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"CU"</span>,</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"V13"</span>,</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"025011"</span>,</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2021"</span>,</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"LCMAP_CU_025011_2021_20220721_V13_CCDC"</span>,</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"LCMAP_CU_025011_2021_20220629_V13_LCPRI.tif"</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">rast</span>()</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">plot</span>(output_file)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+<p><img src="rstac_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>The <code>assets_download()</code> function is an easy and straightforward way to download assets associated with a STAC Item, and by passing multiple asset names (or leaving the <code>asset_names</code> argument <code>NULL</code>) we could use this function to download more than one asset at a time. This function can also handle any format an asset is stored in, making it a flexible way to download rasters, metadata, vectors, or whatever other data is provided by a STAC API.</p>
 <p>The main downside of this approach, however, is that we can’t use it to download only specific parts of an asset, which means we can wind up downloading much more data than we need. For instance, look at how far our land cover raster extends beyond Ashe County’s borders:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">plot</span>(output_file)</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>ashe <span class="sc">|&gt;</span></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_transform</span>(sf<span class="sc">::</span><span class="fu">st_crs</span>(output_file)) <span class="sc">|&gt;</span></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">lwd =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">plot</span>(output_file)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>ashe <span class="sc">|&gt;</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_transform</span>(sf<span class="sc">::</span><span class="fu">st_crs</span>(output_file)) <span class="sc">|&gt;</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">lwd =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
+<p><img src="rstac_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>An alternative approach for downloading raster assets is to use <a href="https://gdal.org/user/virtual_file_systems.html">GDAL’s virtual file system interface</a> to download rasters. If the STAC server stores the asset in a cloud-friendly format, such as <a href="https://www.cogeo.org/">COG</a>, then GDAL is able to download only the necessary pieces of the raster, potentially speeding up download times and reducing bandwidth usage.</p>
-<p>To download assets using GDAL, we need to extract the URL for our assets from our STAC query results. We can get the URL for the <code>lcpri</code> asset using <code>rstac::assets_url()</code>:</p>
+<p>To download assets using GDAL, we need to extract the URL for our assets from our <em>unsigned</em> STAC query results. We can get the URL for the <code>lcpri</code> asset using <code>rstac::assets_url()</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>lcpri_url <span class="ot">&lt;-</span> rstac<span class="sc">::</span><span class="fu">assets_url</span>(signed_stac_query, <span class="st">"lcpri"</span>)</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>lcpri_url</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>lcpri_url <span class="ot">&lt;-</span> rstac<span class="sc">::</span><span class="fu">assets_url</span>(executed_stac_query, <span class="st">"lcpri"</span>)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>lcpri_url</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "https://landcoverdata.blob.core.windows.net/lcmap/CU/V13/025011/2021/LCMAP_CU_025011_2021_20220721_V13_CCDC/LCMAP_CU_025011_2021_20220629_V13_LCPRI.tif?st=2023-09-25T20%3A33%3A05Z&amp;se=2023-09-26T21%3A18%3A05Z&amp;sp=rl&amp;sv=2021-06-08&amp;sr=c&amp;skoid=c85c15d6-d1ae-42d4-af60-e2ca0f81359b&amp;sktid=72f988bf-86f1-41af-91ab-2d7cd011db47&amp;skt=2023-09-26T17%3A00%3A22Z&amp;ske=2023-10-03T17%3A00%3A22Z&amp;sks=b&amp;skv=2021-06-08&amp;sig=3cMmf4DTL6Q9e%2BD6J82mQcXgbNgj%2B9N5yVXRGWoV54c%3D"</code></pre>
+<pre><code>[1] "https://landcoverdata.blob.core.windows.net/lcmap/CU/V13/025011/2021/LCMAP_CU_025011_2021_20220721_V13_CCDC/LCMAP_CU_025011_2021_20220629_V13_LCPRI.tif"</code></pre>
 </div>
 </div>
-<p>In order for this URL to work with GDAL’s virtual filesystem interface, we’ll need to append <code>/vsicurl/</code> to the front of the URL:</p>
+<p>In order for this URL to work with GDAL’s virtual filesystem interface, we’ll need to append a few things in front of the URL. Namely, we’ll need to add:</p>
+<ul>
+<li><code>/vsicurl</code>, to specify that we want to use the <a href="https://gdal.org/user/virtual_file_systems.html#vsicurl-http-https-ftp-files-random-access">http-based virtual filesytem interface</a>,</li>
+<li><code>pc_url_signing=yes</code>, to use GDAL’s built-in method for signing requests to Microsoft’s Planetary Computer,</li>
+<li>and <code>pc_collection=usgs-lcmap-conus-v13</code>, to let GDAL know what collection we need authentication for.</li>
+</ul>
+<p>All of these configuration parameters are documented in the official <a href="https://gdal.org/user/virtual_file_systems.html#vsicurl-http-https-ftp-files-random-access">GDAL documentation</a>.</p>
+<p>We can write a small function that will paste these parameters on to any URL we want:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>lcpri_url <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"/vsicurl/"</span>, lcpri_url)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>make_vsicurl_url <span class="ot">&lt;-</span> <span class="cf">function</span>(base_url) {</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"/vsicurl"</span>, </span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"?pc_url_signing=yes"</span>,</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"&amp;pc_collection=usgs-lcmap-conus-v13"</span>,</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"&amp;url="</span>,</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    base_url</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Next, we’ll download our asset from this URL using <code>sf::gdal_utils()</code>, which provides access to GDAL’s C++ utilities. We’ll use the included interface to <a href="https://gdal.org/programs/gdalwarp.html">gdalwarp</a> to both download and reproject our data, using the <code>t_srs</code> and <code>te</code> arguments to gdalwarp to control the spatial reference system and the extent of our downloaded raster:</p>
+<p>We might have chosen to make this function a bit more flexible by adding a <code>collection</code> argument, so that we can sign requests for data in any collection we’d want. For our purposes here, however, this simpler function should suffice.</p>
+<p>We can then use this function to modify our LCMAP URL:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>lcpri_url <span class="ot">&lt;-</span> <span class="fu">make_vsicurl_url</span>(lcpri_url)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next, we’ll download the <code>lcpri</code> asset from this URL using <code>sf::gdal_utils()</code>, which provides access to GDAL’s C++ utilities. We’ll use the included interface to <a href="https://gdal.org/programs/gdalwarp.html">gdalwarp</a> to both download and reproject our data, using the <code>t_srs</code> and <code>te</code> arguments to gdalwarp to control the spatial reference system and the extent of our downloaded raster:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>out_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">".tif"</span>)</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">gdal_utils</span>(</span>
@@ -347,7 +362,7 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>This download runs a good bit faster than using <code>assets_download()</code>, and results in a smaller raster covering only our area of interest:</p>
+<p>This download runs a good bit faster than using <code>assets_download()</code>, and results in a smaller raster covering only our area of interest, reprojected into the same CRS as our original data:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">rast</span>(out_file) <span class="sc">|&gt;</span></span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">plot</span>()</span>
@@ -355,17 +370,17 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span></span>
 <span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+<p><img src="rstac_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>At this point, we’ve walked through how to use rstac to query a STAC API, and how to use either rstac or GDAL to download assets found in these queries. It’s worth highlighting that so far we’ve only needed to write about 30 lines of code; here’s everything we’ve walked through so far, presented as a single script instead of in a bunch of chunks:</p>
+<p>At this point, we’ve walked through how to use rstac to query a STAC API, and how to use either rstac or GDAL to download assets found in these queries. It’s worth highlighting that so far we’ve only needed to write about 40 lines of code; here’s everything we’ve walked through so far, presented as a single script instead of in a bunch of chunks:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>ashe <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">read_sf</span>(<span class="fu">system.file</span>(<span class="st">"shape/nc.shp"</span>, <span class="at">package =</span> <span class="st">"sf"</span>))[<span class="dv">1</span>, ]</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>ashe_bbox <span class="ot">&lt;-</span> ashe <span class="sc">|&gt;</span></span>
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_transform</span>(<span class="dv">4326</span>) <span class="sc">|&gt;</span></span>
 <span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_bbox</span>()</span>
 <span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>signed_query <span class="ot">&lt;-</span> rstac<span class="sc">::</span><span class="fu">stac</span>(</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>stac_query <span class="ot">&lt;-</span> rstac<span class="sc">::</span><span class="fu">stac</span>(</span>
 <span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"https://planetarycomputer.microsoft.com/api/stac/v1"</span></span>
 <span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
 <span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">stac_search</span>(</span>
@@ -373,78 +388,112 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">bbox =</span> ashe_bbox,</span>
 <span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">datetime =</span> <span class="st">"2021-01-01/2021-12-31"</span></span>
 <span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">get_request</span>() <span class="sc">|&gt;</span></span>
-<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">items_sign</span>(</span>
-<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>    rstac<span class="sc">::</span><span class="fu">sign_planetary_computer</span>()</span>
-<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>out_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">".tif"</span>)</span>
-<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">gdal_utils</span>(</span>
-<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">"warp"</span>,</span>
-<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">source =</span> <span class="fu">paste0</span>(<span class="st">"/vsicurl/"</span>, rstac<span class="sc">::</span><span class="fu">assets_url</span>(signed_query, <span class="st">"lcpri"</span>)),</span>
-<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">destination =</span> out_file,</span>
-<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">options =</span> <span class="fu">c</span>(</span>
-<span id="cb34-25"><a href="#cb34-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">"-t_srs"</span>, sf<span class="sc">::</span><span class="fu">st_crs</span>(ashe)<span class="sc">$</span>wkt,</span>
-<span id="cb34-26"><a href="#cb34-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">"-te"</span>, sf<span class="sc">::</span><span class="fu">st_bbox</span>(ashe)</span>
-<span id="cb34-27"><a href="#cb34-27" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb34-28"><a href="#cb34-28" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb34-29"><a href="#cb34-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-30"><a href="#cb34-30" aria-hidden="true" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">rast</span>(out_file) <span class="sc">|&gt;</span></span>
-<span id="cb34-31"><a href="#cb34-31" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">plot</span>()</span>
-<span id="cb34-32"><a href="#cb34-32" aria-hidden="true" tabindex="-1"></a>ashe <span class="sc">|&gt;</span> </span>
-<span id="cb34-33"><a href="#cb34-33" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb34-34"><a href="#cb34-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">get_request</span>()</span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>make_vsicurl_url <span class="ot">&lt;-</span> <span class="cf">function</span>(base_url) {</span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(</span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"/vsicurl"</span>, </span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">"?pc_url_signing=yes"</span>,</span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">"&amp;pc_collection=usgs-lcmap-conus-v13"</span>,</span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">"&amp;url="</span>,</span>
+<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a>    base_url</span>
+<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb34-25"><a href="#cb34-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-26"><a href="#cb34-26" aria-hidden="true" tabindex="-1"></a>lcpri_url <span class="ot">&lt;-</span> <span class="fu">make_vsicurl_url</span>(rstac<span class="sc">::</span><span class="fu">assets_url</span>(stac_query, <span class="st">"lcpri"</span>))</span>
+<span id="cb34-27"><a href="#cb34-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-28"><a href="#cb34-28" aria-hidden="true" tabindex="-1"></a>out_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">".tif"</span>)</span>
+<span id="cb34-29"><a href="#cb34-29" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">gdal_utils</span>(</span>
+<span id="cb34-30"><a href="#cb34-30" aria-hidden="true" tabindex="-1"></a>  <span class="st">"warp"</span>,</span>
+<span id="cb34-31"><a href="#cb34-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">source =</span> lcpri_url,</span>
+<span id="cb34-32"><a href="#cb34-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">destination =</span> out_file,</span>
+<span id="cb34-33"><a href="#cb34-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">options =</span> <span class="fu">c</span>(</span>
+<span id="cb34-34"><a href="#cb34-34" aria-hidden="true" tabindex="-1"></a>    <span class="st">"-t_srs"</span>, sf<span class="sc">::</span><span class="fu">st_crs</span>(ashe)<span class="sc">$</span>wkt,</span>
+<span id="cb34-35"><a href="#cb34-35" aria-hidden="true" tabindex="-1"></a>    <span class="st">"-te"</span>, sf<span class="sc">::</span><span class="fu">st_bbox</span>(ashe)</span>
+<span id="cb34-36"><a href="#cb34-36" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb34-37"><a href="#cb34-37" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-38"><a href="#cb34-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-39"><a href="#cb34-39" aria-hidden="true" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">rast</span>(out_file) <span class="sc">|&gt;</span></span>
+<span id="cb34-40"><a href="#cb34-40" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">plot</span>()</span>
+<span id="cb34-41"><a href="#cb34-41" aria-hidden="true" tabindex="-1"></a>ashe <span class="sc">|&gt;</span> </span>
+<span id="cb34-42"><a href="#cb34-42" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb34-43"><a href="#cb34-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
+<p><img src="rstac_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>If we wanted to download multiple assets, we’d need to run that <code>gdal_utils()</code> function for each asset URL we wanted to download. For instance, to download both <code>lcpri</code> and <code>lcsec</code> (the primary and secondary land cover classifications, respectively), we could run:</p>
+<p>What if we wanted to download more than one raster asset? We could choose to pass multiple asset names to <code>assets_download()</code>. For instance, if we wanted to also download the secondary land cover classification for this area (called <code>lcsec</code>), we could write:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vapply</span>(</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">"/vsicurl/"</span>, rstac<span class="sc">::</span><span class="fu">assets_url</span>(signed_query, <span class="fu">c</span>(<span class="st">"lcpri"</span>, <span class="st">"lcsec"</span>))),</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(asset_url) {</span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    out_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">".tif"</span>)</span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    sf<span class="sc">::</span><span class="fu">gdal_utils</span>(</span>
-<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>      <span class="st">"warp"</span>,</span>
-<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">source =</span> asset_url,</span>
-<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">destination =</span> out_file,</span>
-<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">options =</span> <span class="fu">c</span>(</span>
-<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"-t_srs"</span>, sf<span class="sc">::</span><span class="fu">st_crs</span>(ashe)<span class="sc">$</span>wkt,</span>
-<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"-te"</span>, sf<span class="sc">::</span><span class="fu">st_bbox</span>(ashe)</span>
-<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>      )</span>
-<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>    out_file</span>
-<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>  },</span>
-<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">character</span>(<span class="dv">1</span>)</span>
-<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> </span>
-<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">rast</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">plot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>rstac<span class="sc">::</span><span class="fu">assets_download</span>(</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  signed_stac_query, </span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">"lcpri"</span>, <span class="st">"lcsec"</span>), </span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">output_dir =</span> <span class="fu">tempdir</span>(),</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">overwrite =</span> <span class="cn">TRUE</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Note that we needed to set <code>overwrite = TRUE</code>, in order to re-download the <code>lcpri</code> asset that we had already retrieved.</p>
+<p>These rasters are now somewhere in our <code>output_dir</code> directory. We can find their file paths using <code>list.files()</code> in order to load and visualize them:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">list.files</span>(</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">file.path</span>(<span class="fu">tempdir</span>(), <span class="st">"lcmap"</span>),</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">recursive =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> </span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">rast</span>() <span class="sc">|&gt;</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">plot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="672"></p>
+<p><img src="rstac_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>If we wanted to download multiple assets using sf and GDAL, we’d need to run our <code>gdal_utils()</code> call for each asset we wanted to download. For instance, to download both <code>lcpri</code> and <code>lcsec</code>, we could run:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vapply</span>(</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">make_vsicurl_url</span>(rstac<span class="sc">::</span><span class="fu">assets_url</span>(stac_query, <span class="fu">c</span>(<span class="st">"lcpri"</span>, <span class="st">"lcsec"</span>))),</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(asset_url) {</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    out_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">".tif"</span>)</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    sf<span class="sc">::</span><span class="fu">gdal_utils</span>(</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>      <span class="st">"warp"</span>,</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">source =</span> asset_url,</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">destination =</span> out_file,</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">options =</span> <span class="fu">c</span>(</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"-t_srs"</span>, sf<span class="sc">::</span><span class="fu">st_crs</span>(ashe)<span class="sc">$</span>wkt,</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"-te"</span>, sf<span class="sc">::</span><span class="fu">st_bbox</span>(ashe)</span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>    out_file</span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>  },</span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">character</span>(<span class="dv">1</span>)</span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> </span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">rast</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">plot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="rstac_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>What if we wanted to download the same asset from more than one item? For instance, what if we wanted to download <code>lcpri</code> for all of North Carolina?</p>
 <p>We could construct our STAC query in almost exactly the same way as before, except using the entire <code>nc</code> data frame instead of just its first row:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>nc <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">read_sf</span>(<span class="fu">system.file</span>(<span class="st">"shape/nc.shp"</span>, <span class="at">package =</span> <span class="st">"sf"</span>))</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>nc_bbox <span class="ot">&lt;-</span> nc <span class="sc">|&gt;</span></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_transform</span>(<span class="dv">4326</span>) <span class="sc">|&gt;</span></span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_bbox</span>()</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>signed_query <span class="ot">&lt;-</span> rstac<span class="sc">::</span><span class="fu">stac</span>(</span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"https://planetarycomputer.microsoft.com/api/stac/v1"</span></span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">stac_search</span>(</span>
-<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">collections =</span> <span class="st">"usgs-lcmap-conus-v13"</span>,</span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">bbox =</span> nc_bbox,</span>
-<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">datetime =</span> <span class="st">"2021-01-01/2021-12-31"</span></span>
-<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">get_request</span>() <span class="sc">|&gt;</span></span>
-<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">items_sign</span>(</span>
-<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>    rstac<span class="sc">::</span><span class="fu">sign_planetary_computer</span>()</span>
-<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>signed_query</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>nc <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">read_sf</span>(<span class="fu">system.file</span>(<span class="st">"shape/nc.shp"</span>, <span class="at">package =</span> <span class="st">"sf"</span>))</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>nc_bbox <span class="ot">&lt;-</span> nc <span class="sc">|&gt;</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_transform</span>(<span class="dv">4326</span>) <span class="sc">|&gt;</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_bbox</span>()</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>stac_query <span class="ot">&lt;-</span> rstac<span class="sc">::</span><span class="fu">stac</span>(</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"https://planetarycomputer.microsoft.com/api/stac/v1"</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">stac_search</span>(</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">collections =</span> <span class="st">"usgs-lcmap-conus-v13"</span>,</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">bbox =</span> nc_bbox,</span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">datetime =</span> <span class="st">"2021-01-01/2021-12-31"</span></span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">get_request</span>()</span>
+<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a>signed_query <span class="ot">&lt;-</span> stac_query <span class="sc">|&gt;</span>   </span>
+<span id="cb38-17"><a href="#cb38-17" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">items_sign</span>(</span>
+<span id="cb38-18"><a href="#cb38-18" aria-hidden="true" tabindex="-1"></a>    rstac<span class="sc">::</span><span class="fu">sign_planetary_computer</span>()</span>
+<span id="cb38-19"><a href="#cb38-19" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb38-20"><a href="#cb38-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-21"><a href="#cb38-21" aria-hidden="true" tabindex="-1"></a>signed_query</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>###STACItemCollection
 - features (20 item(s)):
@@ -466,128 +515,62 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 </div>
 </div>
 <p>As you can see, we now have 20 items to download, rather than just 1!</p>
-<p>We barely need to change our code at all to download all 20 <code>lcpri</code> assets from these items using <code>assets_download()</code>. All we need to do is add <code>overwrite = TRUE</code>, to make sure rstac overwrites the <code>lcpri</code> tile that we downloaded earlier – otherwise, we wouldn’t need to change a thing:</p>
+<p>We barely need to change our code at all to download all 20 <code>lcpri</code> assets from these items using <code>assets_download()</code>. We’re simply going to set <code>progress = FALSE</code>, in order to keep the output from this function clean. Other than that, we don’t need to change a thing:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>rstac<span class="sc">::</span><span class="fu">assets_download</span>(</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  signed_query, </span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"lcpri"</span>,</span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">output_dir =</span> <span class="fu">tempdir</span>(),</span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">overwrite =</span> <span class="cn">TRUE</span></span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-  |                                                                            
-  |                                                                      |   0%
-  |                                                                            
-  |====                                                                  |   5%
-  |                                                                            
-  |=======                                                               |  10%
-  |                                                                            
-  |==========                                                            |  15%
-  |                                                                            
-  |==============                                                        |  20%
-  |                                                                            
-  |==================                                                    |  25%
-  |                                                                            
-  |=====================                                                 |  30%
-  |                                                                            
-  |========================                                              |  35%
-  |                                                                            
-  |============================                                          |  40%
-  |                                                                            
-  |================================                                      |  45%
-  |                                                                            
-  |===================================                                   |  50%
-  |                                                                            
-  |======================================                                |  55%
-  |                                                                            
-  |==========================================                            |  60%
-  |                                                                            
-  |==============================================                        |  65%
-  |                                                                            
-  |=================================================                     |  70%
-  |                                                                            
-  |====================================================                  |  75%
-  |                                                                            
-  |========================================================              |  80%
-  |                                                                            
-  |============================================================          |  85%
-  |                                                                            
-  |===============================================================       |  90%
-  |                                                                            
-  |==================================================================    |  95%
-  |                                                                            
-  |======================================================================| 100%</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>###STACItemCollection
-- features (20 item(s)):
-  - LCMAP_CU_029012_2021_V13_CCDC
-  - LCMAP_CU_029011_2021_V13_CCDC
-  - LCMAP_CU_028013_2021_V13_CCDC
-  - LCMAP_CU_028012_2021_V13_CCDC
-  - LCMAP_CU_028011_2021_V13_CCDC
-  - LCMAP_CU_028010_2021_V13_CCDC
-  - LCMAP_CU_027013_2021_V13_CCDC
-  - LCMAP_CU_027012_2021_V13_CCDC
-  - LCMAP_CU_027011_2021_V13_CCDC
-  - LCMAP_CU_027010_2021_V13_CCDC
-  - ... with 10 more feature(s).
-- assets: lcpri
-- item's fields: 
-assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac_version, type</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>rstac<span class="sc">::</span><span class="fu">assets_download</span>(</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  signed_query, </span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"lcpri"</span>,</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">output_dir =</span> <span class="fu">tempdir</span>(),</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">overwrite =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">progress =</span> <span class="cn">FALSE</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>These files are each saved into their own folder inside of <code>output_dir</code>. We can use <code>list.files()</code> to get the paths to each of them, and then <code>terra::sprc()</code> and <code>terra::mosaic()</code> to combine them into a single raster:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>lcpri <span class="ot">&lt;-</span> <span class="fu">list.files</span>(</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">file.path</span>(<span class="fu">tempdir</span>(), <span class="st">"lcmap"</span>, <span class="st">"CU"</span>, <span class="st">"V13"</span>),</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">file.path</span>(<span class="fu">tempdir</span>(), <span class="st">"lcmap"</span>),</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">pattern =</span> <span class="st">"LCPRI.tif"</span>,</span>
 <span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">recursive =</span> <span class="cn">TRUE</span>,</span>
 <span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">full.names =</span> <span class="cn">TRUE</span></span>
 <span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> </span>
 <span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lapply</span>(terra<span class="sc">::</span>rast) <span class="sc">|&gt;</span> </span>
 <span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">sprc</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">mosaic</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-|---------|---------|---------|---------|
-=========================================
-                                          </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">plot</span>(lcpri)</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>nc <span class="sc">|&gt;</span> </span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_transform</span>(sf<span class="sc">::</span><span class="fu">st_crs</span>(lcpri)) <span class="sc">|&gt;</span> </span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span></span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">mosaic</span>()</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">plot</span>(lcpri)</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>nc <span class="sc">|&gt;</span> </span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_transform</span>(sf<span class="sc">::</span><span class="fu">st_crs</span>(lcpri)) <span class="sc">|&gt;</span> </span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
+<p><img src="rstac_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Note that we’ve lost our color palette due to <code>mosaic()</code>, but this is the same data as we’ve been working with throughout the entire tutorial.</p>
-<p>Or alternatively, we can use our <code>gdal_utils()</code> function – without any edits – to download and merge these files together:</p>
+<p>Or alternatively, we can use our <code>gdal_utils()</code> call – without any edits – to download and merge these files together. Remember that we’re using our <em>unsigned</em> query results here!</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>out_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">".tif"</span>)</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">gdal_utils</span>(</span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"warp"</span>,</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">source =</span> <span class="fu">paste0</span>(<span class="st">"/vsicurl/"</span>, rstac<span class="sc">::</span><span class="fu">assets_url</span>(signed_query, <span class="st">"lcpri"</span>)),</span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">destination =</span> out_file,</span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">options =</span> <span class="fu">c</span>(</span>
-<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"-t_srs"</span>, sf<span class="sc">::</span><span class="fu">st_crs</span>(nc)<span class="sc">$</span>wkt,</span>
-<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"-te"</span>, sf<span class="sc">::</span><span class="fu">st_bbox</span>(nc)</span>
-<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">rast</span>(out_file) <span class="sc">|&gt;</span></span>
-<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">plot</span>()</span>
-<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>nc <span class="sc">|&gt;</span> </span>
-<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>out_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">".tif"</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">gdal_utils</span>(</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"warp"</span>,</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">source =</span> <span class="fu">make_vsicurl_url</span>(rstac<span class="sc">::</span><span class="fu">assets_url</span>(stac_query, <span class="st">"lcpri"</span>)),</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">destination =</span> out_file,</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">options =</span> <span class="fu">c</span>(</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"-t_srs"</span>, sf<span class="sc">::</span><span class="fu">st_crs</span>(nc)<span class="sc">$</span>wkt,</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"-te"</span>, sf<span class="sc">::</span><span class="fu">st_bbox</span>(nc)</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">rast</span>(out_file) <span class="sc">|&gt;</span></span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">plot</span>()</span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>nc <span class="sc">|&gt;</span> </span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="672"></p>
+<p><img src="rstac_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Note that gdalwarp does not interpolate between overlapping pixels, and instead simply uses the value from whichever pixel it processed last. That’s fine here, where our tiles shouldn’t overlap (and pixel values should be identical if they do), but means you shouldn’t use gdalwarp to combine images from multiple time periods into a single composite.</p>
+<p>It’s worth highlighting that these are just two methods among many for downloading this data – you may also find using packages such as <a href="https://github.com/rspatial/terra">terra</a> or <a href="https://gdalcubes.github.io/">gdalcubes</a> useful for getting data from STAC APIs!</p>
 
 </main>
 <!-- /main column -->
