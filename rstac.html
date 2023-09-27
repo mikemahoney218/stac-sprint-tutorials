@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.353">
+<meta name="generator" content="quarto-1.4.386">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -22,7 +22,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -71,10 +71,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </head>
 
-<body class="fullcontent">
+<body>
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="rstac.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
@@ -92,7 +93,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </div>
   
 
+
 </header>
+
 
 <p>This tutorial walks through querying a STAC API using the <a href="https://brazil-data-cube.github.io/rstac/">rstac</a> R package, and downloading data from the API using rstac or <a href="https://gdal.org/">GDAL</a> (via <a href="https://github.com/r-spatial/sf">sf</a>). This tutorial will assume that you’re already familiar with <a href="https://cran.r-project.org/">the R language</a> and the <a href="https://github.com/rspatial/terra">terra</a> package.</p>
 <p>As all of the packages we’ll be using are available from CRAN, you can install them (if necessary) using <code>install.packages()</code>:</p>
@@ -222,7 +225,13 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">st_geometry</span>(ashe) <span class="sc">|&gt;</span> <span class="fu">plot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-1" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="rstac_files/figure-html/unnamed-chunk-10-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-1" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
 </div>
 </div>
 <p>To filter our query down to just tiles intersecting this region, we’ll need to provide the bounding box of the county in <a href="https://en.wikipedia.org/wiki/World_Geodetic_System">WGS84</a> as a query parameter. We can use <code>sf::st_transform()</code> to reproject the county and <code>sf::st_bbox()</code> to find our bounding box:</p>
@@ -301,7 +310,13 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">plot</span>(output_file)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-2" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="rstac_files/figure-html/unnamed-chunk-15-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-2" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
 </div>
 </div>
 <p>The <code>assets_download()</code> function is an easy and straightforward way to download assets associated with a STAC Item, and by passing multiple asset names (or leaving the <code>asset_names</code> argument <code>NULL</code>) we could use this function to download more than one asset at a time. This function can also handle any format an asset is stored in, making it a flexible way to download rasters, metadata, vectors, or whatever other data is provided by a STAC API.</p>
@@ -313,7 +328,13 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span></span>
 <span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">lwd =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-3" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="rstac_files/figure-html/unnamed-chunk-16-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-3" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
 </div>
 </div>
 <p>An alternative approach for downloading raster assets is to use <a href="https://gdal.org/user/virtual_file_systems.html">GDAL’s virtual file system interface</a> to download rasters. If the STAC server stores the asset in a cloud-friendly format, such as <a href="https://www.cogeo.org/">COG</a>, then GDAL is able to download only the necessary pieces of the raster, potentially speeding up download times and reducing bandwidth usage.</p>
@@ -370,7 +391,13 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span></span>
 <span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="672"></p>
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-4" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="rstac_files/figure-html/unnamed-chunk-21-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-4" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
 </div>
 </div>
 <p>At this point, we’ve walked through how to use rstac to query a STAC API, and how to use either rstac or GDAL to download assets found in these queries. It’s worth highlighting that so far we’ve only needed to write about 40 lines of code; here’s everything we’ve walked through so far, presented as a single script instead of in a bunch of chunks:</p>
@@ -419,7 +446,13 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb34-42"><a href="#cb34-42" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span> </span>
 <span id="cb34-43"><a href="#cb34-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="672"></p>
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-5" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="rstac_files/figure-html/unnamed-chunk-22-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-5" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
 </div>
 </div>
 <p>What if we wanted to download more than one raster asset? We could choose to pass multiple asset names to <code>assets_download()</code>. For instance, if we wanted to also download the secondary land cover classification for this area (called <code>lcsec</code>), we could write:</p>
@@ -442,7 +475,13 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">rast</span>() <span class="sc">|&gt;</span></span>
 <span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">plot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-6" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="rstac_files/figure-html/unnamed-chunk-24-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-6" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
 </div>
 </div>
 <p>If we wanted to download multiple assets using sf and GDAL, we’d need to run our <code>gdal_utils()</code> call for each asset we wanted to download. For instance, to download both <code>lcpri</code> and <code>lcsec</code>, we could run:</p>
@@ -467,7 +506,13 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">rast</span>() <span class="sc">|&gt;</span> </span>
 <span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a>  terra<span class="sc">::</span><span class="fu">plot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="672"></p>
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-7" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="rstac_files/figure-html/unnamed-chunk-25-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-7" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
 </div>
 </div>
 <p>What if we wanted to download the same asset from more than one item? For instance, what if we wanted to download <code>lcpri</code> for all of North Carolina?</p>
@@ -543,7 +588,13 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span></span>
 <span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-8" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="rstac_files/figure-html/unnamed-chunk-28-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-8" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
 </div>
 </div>
 <p>Note that we’ve lost our color palette due to <code>mosaic()</code>, but this is the same data as we’ve been working with throughout the entire tutorial.</p>
@@ -566,7 +617,13 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_geometry</span>() <span class="sc">|&gt;</span> </span>
 <span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="rstac_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="672"></p>
+<div id="fig-539a35d47e664c97a50115a146a7f1bd-9" class="quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div>
+<img src="rstac_files/figure-html/unnamed-chunk-29-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-9" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
 </div>
 </div>
 <p>Note that gdalwarp does not interpolate between overlapping pixels, and instead simply uses the value from whichever pixel it processed last. That’s fine here, where our tiles shouldn’t overlap (and pixel values should be identical if they do), but means you shouldn’t use gdalwarp to combine images from multiple time periods into a single composite.</p>
@@ -653,10 +710,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -666,8 +722,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -680,6 +745,128 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    const typesetMath = (el) => {
+      if (window.MathJax) {
+        // MathJax Typeset
+        window.MathJax.typeset([el]);
+      } else if (window.katex) {
+        // KaTeX Render
+        var mathElements = el.getElementsByClassName("math");
+        var macros = [];
+        for (var i = 0; i < mathElements.length; i++) {
+          var texText = mathElements[i].firstChild;
+          if (mathElements[i].tagName == "SPAN") {
+            window.katex.render(texText.data, mathElements[i], {
+              displayMode: mathElements[i].classList.contains('display'),
+              throwOnError: false,
+              macros: macros,
+              fleqn: false
+            });
+          }
+        }
+      }
+    }
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        for (let i = 0; i < 2; i++) {
+          container.appendChild(note.children[i].cloneNode(true));
+        }
+        typesetMath(container);
+        return container.innerHTML
+      } else {
+        typesetMath(note);
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      typesetMath(note);
+      return note.innerHTML;
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -723,6 +910,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -748,6 +936,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -808,6 +1022,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 

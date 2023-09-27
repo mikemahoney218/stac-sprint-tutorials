@@ -1,6 +1,8 @@
 ---
 title: "Download data from a STAC API using R and rstac"
-format: html
+format:
+  html: default
+  md: default
 ---
 
 ```{r}
