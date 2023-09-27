@@ -1,0 +1,6 @@
+---
+title: "STAC Sprint Tutorials"
+author: Mike Mahoney
+---
+
+During STAC Sprint #8 (9/26 - 9/28 2023) I had the opportunity to work on a handful of tutorials geared towards helping non-Python users query and download data from STAC APIs. This website collects the drafts as they existed during that week.

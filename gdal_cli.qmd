@@ -9,6 +9,8 @@ format:
 
 This tutorial walks through how to use the [STACIT GDAL Driver](https://gdal.org/drivers/raster/stacit.html) to retrieve data from a STAC catalog or collection using GDAL's command line interface (CLI). We'll be using data from Planetary Computer's [USGS Land Change Monitoring, Assessment, and Projection (LCMAP)](https://planetarycomputer.microsoft.com/dataset/usgs-lcmap-conus-v13) collection as an example.
 
+We're going to assume that you've got [GDAL installed](https://gdal.org/) (version 3.4 or newer), and are working in a Bash-like shell (one that lets you define variables with `VAR=` and call them with `$VAR`) with gdalwarp and gdalinfo available. We'll also use [curl](https://curl.se/), [head](https://linux.die.net/man/1/head) and [jq](https://jqlang.github.io/jq/) once to look at the results of an API query -- but you can follow the rest of the tutorial without those installed.
+
 To download the 2021 LCMAP primary land cover classification (`lcpri`) for the New York State bounding box, we can use gdalwarp with the STACIT driver like so:
 
 ```{bash}
@@ -61,7 +63,7 @@ Sys.setenv(
 )
 ```
 
-We also need to limit the spatial range of our results, using a bounding box in the [WGS 84](http://www.opengis.net/def/crs/OGC/1.3/CRS84):
+We also need to limit the spatial range of our results, using a bounding box in the [WGS 84](http://www.opengis.net/def/crs/OGC/1.3/CRS84) coordinate reference system:
 
 ```{bash}
 WGS84_BBOX="-79.762,40.496,-71.856,45.013"
@@ -76,7 +78,7 @@ Sys.setenv(
 )
 ```
 
-This is a complete item search query string! If we visited this URL -- or accessed it via cURL or another utility -- we'd see a feature collection listing metadata about all the available LCMAP rasters falling within our area of interest. We could optionally use cURL and [jq](https://jqlang.github.io/jq/) to take a peek at what this JSON document looks like:
+This is a complete item search query string! If we visited this URL -- or accessed it via curl or another utility -- we'd see a feature collection listing metadata about all the available LCMAP rasters falling within our area of interest. We could optionally use curl and [jq](https://jqlang.github.io/jq/), if they're installed, to take a peek at what this JSON document looks like:
 
 ```{bash}
 curl -s $QUERY_URL | head -n 1 | jq > query.txt
