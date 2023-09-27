@@ -1,12 +1,11 @@
-# Download data from a STAC API using R and rstac
+# Download data from a STAC API using R, rstac, and GDAL
 
 This tutorial walks through querying a STAC API using the
 [rstac](https://brazil-data-cube.github.io/rstac/) R package, and
 downloading data from the API using rstac or [GDAL](https://gdal.org/)
 (via [sf](https://github.com/r-spatial/sf)). This tutorial will assume
-that you’re already familiar with [the R
-language](https://cran.r-project.org/) and the
-[terra](https://github.com/rspatial/terra) package.
+that you’re already familiar with [R](https://cran.r-project.org/) and
+working with spatial data.
 
 As all of the packages we’ll be using are available from CRAN, you can
 install them (if necessary) using `install.packages()`:

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Download data from a STAC API using R and rstac</title>
+<title>Download data from a STAC API using R, rstac, and GDAL</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -80,7 +80,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Download data from a STAC API using R and rstac</h1>
+<h1 class="title">Download data from a STAC API using R, rstac, and GDAL</h1>
 </div>
 
 
@@ -97,7 +97,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This tutorial walks through querying a STAC API using the <a href="https://brazil-data-cube.github.io/rstac/">rstac</a> R package, and downloading data from the API using rstac or <a href="https://gdal.org/">GDAL</a> (via <a href="https://github.com/r-spatial/sf">sf</a>). This tutorial will assume that you’re already familiar with <a href="https://cran.r-project.org/">the R language</a> and the <a href="https://github.com/rspatial/terra">terra</a> package.</p>
+<p>This tutorial walks through querying a STAC API using the <a href="https://brazil-data-cube.github.io/rstac/">rstac</a> R package, and downloading data from the API using rstac or <a href="https://gdal.org/">GDAL</a> (via <a href="https://github.com/r-spatial/sf">sf</a>). This tutorial will assume that you’re already familiar with <a href="https://cran.r-project.org/">R</a> and working with spatial data.</p>
 <p>As all of the packages we’ll be using are available from CRAN, you can install them (if necessary) using <code>install.packages()</code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"sf"</span>)</span>
