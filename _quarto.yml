@@ -12,6 +12,8 @@ website:
         text: Downloading data using R
       - href: gdal_cli.qmd
         text: Downloading data using a CLI
+      - href: r_cql.qmd
+        text: Using rstac and CQL2 to query STAC APIs
 
 format:
   html:
