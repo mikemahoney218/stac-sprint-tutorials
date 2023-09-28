@@ -21,8 +21,6 @@ As in the last tutorial, we're going to start off by querying Microsoft's [Plane
 
 ```{r}
 ashe <- sf::read_sf(system.file("shape/nc.shp", package = "sf"))[1, ]
-
-sf::st_geometry(ashe) |> plot()
 ```
 
 Let's try and get Landsat imagery for this area from January 2021. As we saw last time, we're able to find all the STAC Items that match this description using `rstac::stac_search()`, providing our bounding box, time range, and desired data collection as regular function arguments. To get all the Landsat images for this spatiotemporal area of interest, we might write our query like this:
@@ -147,7 +145,7 @@ rstac::stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
 We could also use other logical operators to filter these results down further. For instance, the `eo:cloud_cover` property, part of the [electro-optical STAC extension](https://github.com/stac-extensions/eo), provides an estimate of how much of each image is covered by clouds. We could add a filter to restrict our results to only include images with less than 10% cloud cover using this property and `<`:
 
 ```{r}
-stac_query <- rstac::stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
+rstac::stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
   rstac::ext_filter(
     collection == "landsat-c2-l2" &&
       t_intersects(datetime, {{time_range}}) &&

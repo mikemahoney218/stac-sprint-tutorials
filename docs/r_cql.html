@@ -181,18 +181,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>As in the last tutorial, we’re going to start off by querying Microsoft’s <a href="https://planetarycomputer.microsoft.com">Planetary Computer</a> STAC API to get data for Ashe County, North Carolina. Let’s go ahead and load the geometry for the county:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ashe <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">read_sf</span>(<span class="fu">system.file</span>(<span class="st">"shape/nc.shp"</span>, <span class="at">package =</span> <span class="st">"sf"</span>))[<span class="dv">1</span>, ]</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">st_geometry</span>(ashe) <span class="sc">|&gt;</span> <span class="fu">plot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div id="fig-539a35d47e664c97a50115a146a7f1bd-1" class="quarto-figure quarto-figure-center anchored" width="672">
-<figure class="quarto-float quarto-float-fig figure">
-<div>
-<img src="r_cql_files/figure-html/unnamed-chunk-2-1.png" id="fig-539a35d47e664c97a50115a146a7f1bd-1" class="img-fluid figure-img" width="672">
-</div>
-</figure>
-</div>
-</div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ashe <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">read_sf</span>(<span class="fu">system.file</span>(<span class="st">"shape/nc.shp"</span>, <span class="at">package =</span> <span class="st">"sf"</span>))[<span class="dv">1</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s try and get Landsat imagery for this area from January 2021. As we saw last time, we’re able to find all the STAC Items that match this description using <code>rstac::stac_search()</code>, providing our bounding box, time range, and desired data collection as regular function arguments. To get all the Landsat images for this spatiotemporal area of interest, we might write our query like this:</p>
 <div class="cell">
@@ -408,7 +397,7 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 </div>
 <p>We could also use other logical operators to filter these results down further. For instance, the <code>eo:cloud_cover</code> property, part of the <a href="https://github.com/stac-extensions/eo">electro-optical STAC extension</a>, provides an estimate of how much of each image is covered by clouds. We could add a filter to restrict our results to only include images with less than 10% cloud cover using this property and <code>&lt;</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>stac_query <span class="ot">&lt;-</span> rstac<span class="sc">::</span><span class="fu">stac</span>(<span class="st">"https://planetarycomputer.microsoft.com/api/stac/v1"</span>) <span class="sc">|&gt;</span></span>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>rstac<span class="sc">::</span><span class="fu">stac</span>(<span class="st">"https://planetarycomputer.microsoft.com/api/stac/v1"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">ext_filter</span>(</span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    collection <span class="sc">==</span> <span class="st">"landsat-c2-l2"</span> <span class="sc">&amp;&amp;</span></span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">t_intersects</span>(datetime, {{time_range}}) <span class="sc">&amp;&amp;</span></span>
@@ -417,6 +406,15 @@ assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac
 <span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">eo:cloud_cover</span><span class="st">`</span> <span class="sc">&lt;</span> <span class="dv">10</span></span>
 <span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
 <span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  rstac<span class="sc">::</span><span class="fu">post_request</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>###STACItemCollection
+- features (1 item(s)):
+  - LC08_L2SP_018034_20210110_02_T1
+- assets: 
+ang, atran, blue, cdist, coastal, drad, emis, emsd, green, lwir11, mtl.json, mtl.txt, mtl.xml, nir08, qa, qa_aerosol, qa_pixel, qa_radsat, red, rendered_preview, swir16, swir22, tilejson, trad, urad
+- item's fields: 
+assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac_version, type</code></pre>
+</div>
 </div>
 <p>rstac is able to translate several other R expressions into CQL2 representations. For a list of supported R expressions and other examples, <a href="https://brazil-data-cube.github.io/rstac/articles/rstac-02-cql2.html">check out the rstac documentation</a>.</p>
 

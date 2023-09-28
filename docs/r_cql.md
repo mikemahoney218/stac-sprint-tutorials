@@ -28,13 +28,7 @@ for the county:
 
 ``` r
 ashe <- sf::read_sf(system.file("shape/nc.shp", package = "sf"))[1, ]
-
-sf::st_geometry(ashe) |> plot()
 ```
-
-<img
-src="r_cql.markdown_strict_files/figure-markdown_strict/unnamed-chunk-2-1.png"
-id="fig-539a35d47e664c97a50115a146a7f1bd-1" />
 
 Let’s try and get Landsat imagery for this area from January 2021. As we
 saw last time, we’re able to find all the STAC Items that match this
@@ -345,7 +339,7 @@ could add a filter to restrict our results to only include images with
 less than 10% cloud cover using this property and `<`:
 
 ``` r
-stac_query <- rstac::stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
+rstac::stac("https://planetarycomputer.microsoft.com/api/stac/v1") |>
   rstac::ext_filter(
     collection == "landsat-c2-l2" &&
       t_intersects(datetime, {{time_range}}) &&
@@ -355,6 +349,14 @@ stac_query <- rstac::stac("https://planetarycomputer.microsoft.com/api/stac/v1")
   ) |>
   rstac::post_request()
 ```
+
+    ###STACItemCollection
+    - features (1 item(s)):
+      - LC08_L2SP_018034_20210110_02_T1
+    - assets: 
+    ang, atran, blue, cdist, coastal, drad, emis, emsd, green, lwir11, mtl.json, mtl.txt, mtl.xml, nir08, qa, qa_aerosol, qa_pixel, qa_radsat, red, rendered_preview, swir16, swir22, tilejson, trad, urad
+    - item's fields: 
+    assets, bbox, collection, geometry, id, links, properties, stac_extensions, stac_version, type
 
 rstac is able to translate several other R expressions into CQL2
 representations. For a list of supported R expressions and other
